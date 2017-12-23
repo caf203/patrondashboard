@@ -267,7 +267,7 @@ html(lang='en')
         $("#submitmodules").click(function () {
           $.ajax({
                 type:'POST',
-                url:'http://100.7.41.125:8000/savemodules',
+                url:'https://whatezlife.com/savemodules',
                 data: $("#modulesform").serializeJSON(),
                 success:function(msg) {
                     message.innerHTML = msg.message
