@@ -1,0 +1,24 @@
+{
+  "core": {
+    "useSSL": false,
+    "port": 80
+  },
+  "database": {
+    "host": "localhost",
+    "port": 28015,
+    "password": "",
+    "user": "admin"
+  },
+  "oauth": {
+    "clientID": "clientID",
+    "secret": "secret"
+  },
+  "session": {
+    "secret": "xd",
+    "host": "localhost",
+    "port": "6379",
+    "ttl": "600000"
+  },
+  "callbackURL": "",
+  "webhookURL": ""
+}

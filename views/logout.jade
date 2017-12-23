@@ -1,0 +1,74 @@
+doctype html
+html(lang='en')
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    // Meta, title, CSS, favicons, etc.
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    title Gentelella Alela! 
+    // Bootstrap
+    link(href='/vendors/bootstrap/dist/css/bootstrap.min.css', rel='stylesheet')
+    // Font Awesome
+    link(href='/vendors/font-awesome/css/font-awesome.min.css', rel='stylesheet')
+    // NProgress
+    link(href='/vendors/nprogress/nprogress.css', rel='stylesheet')
+    // Animate.css
+    link(href='/vendors/animate.css/animate.min.css', rel='stylesheet')
+    // Custom Theme Style
+    link(href='/build/css/custom.min.css', rel='stylesheet')
+  body.login
+    div
+      a#signup.hiddenanchor
+      a#signin.hiddenanchor
+      .login_wrapper
+        .animate.form.login_form
+          section.login_content
+            form
+              h1 Logged out
+              | You will be redirected to the homepage, or alternatively, you can click 
+              a(href="/")  this to go manually.
+              .clearfix
+              .separator
+                p.change_link
+                  | Accidently logged out?
+                  a.to_register(href='/oauth/login')  Sign in again 
+                .clearfix
+                br
+                div
+                  h1
+                    img(src="/images/loggericon.png")
+                    |  Logger
+                  small
+                    | Gentelella Alela (this theme) was created by colorlib, check them out
+                    a(href="https://github.com/puikinsh/gentelella")  here.
+        #register.animate.form.registration_form
+          section.login_content
+            form
+              h1 Create Account
+              div
+                input.form-control(type='text', placeholder='Username', required='')
+              div
+                input.form-control(type='email', placeholder='Email', required='')
+              div
+                input.form-control(type='password', placeholder='Password', required='')
+              div
+                a.btn.btn-default.submit(href='index.html') Submit
+              .clearfix
+              .separator
+                p.change_link
+                  | Already a member ?
+                  a.to_register(href='#signin')  Log in 
+                .clearfix
+                br
+                div
+                  h1
+                    i.fa.fa-paw
+                    |  Gentelella Alela!
+                  p
+                    | ©2016 All Rights Reserved. Gentelella Alela! is a Bootstrap 3 template. Privacy and Terms
+
+script.
+     setTimeout(() => {
+          window.location.href = "https://whatezlife.com/"
+     }, 3000)

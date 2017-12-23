@@ -1,0 +1,114 @@
+doctype html
+html(lang='en')
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    // Meta, title, CSS, favicons, etc.
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    title #{user.username} | Logger Dashboard
+    link(href='/vendors/bootstrap/dist/css/bootstrap.min.css', rel='stylesheet')
+    link(href='/vendors/font-awesome/css/font-awesome.min.css', rel='stylesheet')
+    link(href='/vendors/nprogress/nprogress.css', rel='stylesheet')
+    link(href='/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css', rel='stylesheet')
+    link(href='/build/css/custom.min.css', rel='stylesheet')
+  body.nav-md
+    .container.body
+      .main_container
+        .col-md-3.left_col
+          .left_col.scroll-view
+            .navbar.nav_title(style='border: 0;')
+              a.site_title(href='index.html')
+                img(src='/images/loggericon.png')
+                span  Logger
+            .clearfix
+            // menu profile quick info
+            .profile.clearfix
+              .profile_pic
+                img.img-circle.profile_img(src='#{user.avatarURL}', alt='...')
+              .profile_info
+                span Logged in as,
+                h2 #{user.username}
+            // /menu profile quick info
+            br
+            // sidebar menu
+            #sidebar-menu.main_menu_side.hidden-print.main_menu
+              .menu_section
+                h3 General
+                ul.nav.side-menu
+                  li
+                    a
+                      i.fa.fa-home
+                      |  Home 
+                      span.fa.fa-chevron-down
+                    ul.nav.child_menu
+                      li
+                        a(href='/') Home
+                      li
+                        a(href='/serverselector') Server selector
+                      li
+                        a(href='/lastnames') Your last names
+            // /sidebar menu
+            // /menu footer buttons
+            .sidebar-footer.hidden-small
+              a(data-toggle='tooltip', data-placement='top', title='Logout', href='/logout', style="width: 100%")
+                span.glyphicon.glyphicon-off(aria-hidden='true')
+            // /menu footer buttons
+        // top navigation
+        .top_nav
+          .nav_menu
+            nav
+              .nav.toggle
+                a#menu_toggle
+                  i.fa.fa-bars
+              ul.nav.navbar-nav.navbar-right
+                li
+                  a.user-profile.dropdown-toggle(href='javascript:;', data-toggle='dropdown', aria-expanded='false')
+                    img(src='#{user.avatarURL}', alt='')
+                    | #{user.username} 
+                    span.fa.fa-angle-down
+                  ul.dropdown-menu.dropdown-usermenu.pull-right
+                    li
+                      a(href='javascript:;') Help
+                    li
+                      a(href='login.html')
+                        i.fa.fa-sign-out.pull-right
+                        |  Log Out
+        // /top navigation
+        // page content
+        .right_col(role='main')
+          p wewlad
+          h1.text-center Welcome to the dashboard!
+          h2.text-center We've been expecting you, #{user.username} ( ͡° ͜ʖ ͡°)
+          br
+          .col-md-55.pagination-centered.text-center(style="margin: auto; width: 50%;")
+            .image.view.view-first.center-block
+              a(href="https://whatezlife.com/serverselector")
+                img(style='width: 500px; height: 500px; display: block; margin: auto;', src='/images/server.png', alt='image').img-responsive.img-rounded
+            .caption
+              p
+                strong Server Selector
+              p Go here to edit your servers
+          .col-md-55.pagination-centered.text-center.center-block(style="margin: auto; width: 50%;")
+            .image.view.view-first.center-block
+              a(href="https://whatezlife.com/lastnames")
+                img(style='width: 500px; height: 500px; display: block; margin: auto;', src='/images/clipboard.png', alt='image').img-responsive.img-rounded
+            .caption
+              p
+                strong Last Names
+              p Go here to view
+          // top tiles
+          // /top tiles
+        // /page content
+        // footer content
+        footer
+          .pull-right
+            | Gentelella - Bootstrap Admin Template by 
+            a(href='https://colorlib.com') Colorlib
+          .clearfix
+        // /footer content
+    script(src='/vendors/jquery/dist/jquery.min.js')
+    script(src='/vendors/bootstrap/dist/js/bootstrap.min.js')
+    script(src='/vendors/nprogress/nprogress.js')
+    script(src='/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js')
+    script(src='/build/js/custom.min.js')
