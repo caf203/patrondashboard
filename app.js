@@ -113,7 +113,6 @@ app.get('/oauth/callback', passport.authenticate('discord', { failureRedirect: '
 
 app.get('/lastnames', checkAuth, (req, res) => {
   IPC.getLastNames(req.user.id).then((names) => {
-    if (names.length === 0) names = ['None']
     names = names.filter((name, pos) => names.indexOf(name) === pos).reverse().map((n, pos) => `${++pos}: ${n}`)
     res.render('lastnames', { user: req.user, names: names })
   }).catch((e) => {
