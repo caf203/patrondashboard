@@ -102,9 +102,11 @@ app.get('/oauth/callback', passport.authenticate('discord', { failureRedirect: '
         }
       }]}).catch(console.error)
       if (!req.user.avatar) {
-        req.user.avatarURL = `https://cdn.discordapp.com/embed/avatars/${req.user.discriminator % 5}.gif`
-      } else {
+        req.user.avatarURL = `https://cdn.discordapp.com/embed/avatars/${req.user.discriminator % 5}.png`
+      } else if (req.user.avatar.startsWith('a_')) {
         req.user.avatarURL = `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.gif`
+      } else {
+        req.user.avatarURL = `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`
       }
       res.redirect('/')
     })
