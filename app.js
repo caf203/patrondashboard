@@ -111,8 +111,8 @@ app.get('/oauth/callback', passport.authenticate('discord', { failureRedirect: '
 
 app.get('/lastnames', checkAuth, (req, res) => {
   IPC.getLastNames(req.user.id).then((names) => {
-    names = names.filter((name, pos) => names.indexOf(name) === pos).reverse().map((n, pos) => `${++pos}: ${n}`)
     if (names.length === 0) names = ['None']
+    names = names.filter((name, pos) => names.indexOf(name) === pos).reverse().map((n, pos) => `${++pos}: ${n}`)
     res.render('lastnames', { user: req.user, names: names })
   }).catch((e) => {
     console.error(e)
@@ -165,7 +165,7 @@ if (Config.core.useSSL) {
     cert: fs.readFileSync('ssl/cert.pem')
   }, app).listen(Config.core.port, function (err) {
     if (err) return console.log(err)
-    console.log('Logger Dashboard listening at https://whatezlife.com/')
+    console.log('Logger Dashboard listening at https://whatezlife.com/', Config.core.port)
   })
 } else {
   app.listen(Config.core.port, function (err) {

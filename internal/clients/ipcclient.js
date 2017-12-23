@@ -91,7 +91,6 @@ function waitFor (op, id) {
       if (!validOps.includes(m.op)) {
       } else {
         let timeout = setTimeout(() => {
-          console.log(`TIMEOUT WHILE WAITING FOR EVENT RELATED TO ${op}`)
           reject('Timeout') // eslint-disable-line
           process.removeListener('message', wait)
         }, 10000)

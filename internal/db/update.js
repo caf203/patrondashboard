@@ -26,11 +26,11 @@ function clearAndSaveType (body, doc) {
     }
     if (valid) {
       let feedCopy = feeds.slice()
-      if (doc.logchannel && feedCopy.map(k => body[k]).join('')) {
+      if (doc.logchannel && feedCopy.map(k => body[k]).join('') && body.all) {
         reject({
           message: 'You cannot log to any other channel when you\'re already logging all events to one.'
         })
-      } else if (body.all && Object.keys(doc.feeds).map(k => doc.feeds[k].channelID).join('')) {
+      } else if (body.all && Object.keys(doc.feeds).map(k => doc.feeds[k].channelID).join('') && (body.joinlog || body.mod || body.server || body.voice || body.messages)) {
         reject({
           message: 'You cannot log all events to a channel when you\'re already logging to a different channel!'
         })

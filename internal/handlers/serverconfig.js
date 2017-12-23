@@ -40,6 +40,11 @@ module.exports = (req, res) => {
                 name: channel.name
               }
             })
+          } else {
+            selectedChannels['all'] = {
+              id: '',
+              name: ''
+            }
           }
           Object.keys(doc.feeds).forEach((key) => {
             if (doc.feeds[key].channelID) {
