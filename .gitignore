@@ -17,5 +17,5 @@ dump.rdb
 # Compiled Files
 dist
 
-# Static files
-static/
+# Package Lock
+package-lock.json
