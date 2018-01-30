@@ -70,6 +70,10 @@ html(lang='en')
                         a(href='/serverselector') Server selector
                       li
                         a(href='/lastnames') Your last names
+                  li
+                    a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
+                      i.fa.fa-envelope
+                      |  Invite
             // /sidebar menu
             // /menu footer buttons
             .sidebar-footer.hidden-small
@@ -96,6 +100,9 @@ html(lang='en')
                       a(href='/logout')
                         i.fa.fa-sign-out.pull-right
                         |  Log Out
+                li
+                  a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
+                    | Invite
         .right_col(role='main')
           h1.text-center Configuring #{guildName}:
           h2.text-center Logged in as #{user.username}

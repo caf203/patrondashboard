@@ -48,6 +48,10 @@ html(lang='en')
                         a(href='/serverselector') Server selector
                       li
                         a(href='/lastnames') Your last names
+                  li
+                    a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
+                      i.fa.fa-envelope
+                      |  Invite
             // /sidebar menu
             // /menu footer buttons
             .sidebar-footer.hidden-small
@@ -74,10 +78,12 @@ html(lang='en')
                       a(href='/logout')
                         i.fa.fa-sign-out.pull-right
                         |  Log Out
+                li
+                  a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
+                    | Invite
         // /top navigation
         // page content
         .right_col(role='main')
-          p wewlad
           h1.text-center Welcome to the dashboard!
           h2.text-center We've been expecting you, #{user.username}
           br
