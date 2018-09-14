@@ -17,7 +17,10 @@ const https = require('https')
 const serverConfig = require('./internal/handlers/serverconfig')
 const saveConfigHandler = require('./internal/handlers/saveconfig')
 const saveModulesHandler = require('./internal/handlers/moduleshandler')
+const clearLastNames = require('./internal/handlers/clearlastnames')
 const IPC = require('./internal/clients/ipcclient')
+
+global.SERVE_REQUESTS = false
 
 if (process.send) {
   console.log('Connected to bot process via IPC.')
@@ -71,6 +74,14 @@ if (Config.core.useSSL) {
 }
 app.set('view engine', 'jade')
 app.locals.basedir = path.join(__dirname, 'views')
+
+app.use(function (req, res, next) {
+  if (!global.SERVE_REQUESTS && req.path !== '/') {
+    res.render('booting')
+  } else {
+    next()
+  }
+}) 
 
 app.get('/', checkAuth, (req, res) => {
   res.render('authenticated', { user: req.user })
@@ -149,6 +160,15 @@ app.post('/savechannels', checkAuth, (req, res) => {
 
 app.post('/savemodules', checkAuth, (req, res) => {
   saveModulesHandler(req, res)
+})
+
+app.post('/clearlastnames', checkAuth, (req, res) => {
+  clearLastNames(req.user.id).then(() => {
+    res.status(200).json({'message': 'Successfully cleared saved names.'})
+  }).catch((e) => {
+    console.error(e)
+    res.status(500).json({'message': 'Something went wrong while clearing saved names.'})
+  })
 })
 
 app.get('*', function (req, res) {

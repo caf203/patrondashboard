@@ -16,10 +16,12 @@ const allEvents = [
   'messageReactionRemoveAll',
   'messageUpdate',
   'guildMemberAdd',
+  'guildMemberKick',
   'guildMemberRemove',
   'guildMemberUpdate',
   'voiceChannelLeave',
   'voiceChannelJoin',
+  'voiceStateUpdate',
   'voiceChannelSwitch',
   'guildEmojisUpdate' ]
 

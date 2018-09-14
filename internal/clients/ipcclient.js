@@ -1,5 +1,7 @@
+const logger = require('../logger')
+
 class IPCClient {
-  getServer (id) {
+  getServer(id) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
         'op': 'GUILD_FETCH',
@@ -9,7 +11,7 @@ class IPCClient {
     })
   }
 
-  getChannel (id) {
+  getChannel(id) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
         'op': 'CHANNEL_FETCH',
@@ -19,7 +21,7 @@ class IPCClient {
     })
   }
 
-  getLastNames (id) {
+  getLastNames(id) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
         'op': 'GET_LASTNAMES',
@@ -29,17 +31,17 @@ class IPCClient {
     })
   }
 
-  getUser (id) {
+  getUser(id) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
-        'op': 'GETUSER',
+        'op': 'GET_USER',
         'id': id
       }))
-      waitFor('GETUSER_RESPONSE').then(resolve).catch(reject)
+      waitFor('GET_USER_RESPONSE').then(resolve).catch(reject)
     })
   }
 
-  getUserPerms (guildID, userID) {
+  getUserPerms(guildID, userID) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
         'op': 'GET_USER_PERMS_GUILD',
@@ -50,29 +52,29 @@ class IPCClient {
     })
   }
 
-  getEditableGuilds (guilds, userID) {
+  getEditableGuilds(guilds, userID) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
         'op': 'GET_EDITABLE_GUILDS',
-        'content': guilds,
+        'c': guilds,
         'id': userID
       }))
       waitFor('GET_EDITABLE_GUILDS_RESPONSE', userID).then(resolve).catch(reject)
     })
   }
 
-  getAccessableChannels (guildID, userID) {
+  getAccessableChannels(guildID, userID) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
         'op': 'GET_ACCESSABLE_CHANNELS',
-        'content': guildID,
+        'c': guildID,
         'id': userID
       }))
       waitFor('GET_ACCESSABLE_CHANNELS_RESPONSE', userID).then(resolve).catch(reject)
     })
   }
 
-  recacheBot (guildID) {
+  recacheBot(guildID) {
     return new Promise((resolve, reject) => {
       process.send(JSON.stringify({
         'op': 'RECACHE_REDIS',
@@ -83,13 +85,37 @@ class IPCClient {
   }
 }
 
-const validOps = ['GUILD_FETCH_RESPONSE', 'CHANNEL_FETCH_RESPONSE', 'GET_LASTNAMES_RESPONSE', 'TEST_MESSAGE', 'GETUSER_RESPONSE', 'GET_LASTNAMES_RESPONSE', 'GET_EDITABLE_GUILDS_RESPONSE', 'GET_ACCESSABLE_CHANNELS_RESPONSE', 'RECACHE_REDIS_RESPONSE', 'GET_USER_PERMS_GUILD_RESPONSE']
+process.on('message', (m) => {
+  try {
+    m = JSON.parse(m)
+  } catch (_) { }
+  if (m.op === 'HEARTBEAT') {
+    m.c.forEach((shard) => {
+      if (shard.ready !== true) {
+        console.log(`Shard ${shard.shardID} returned an unacceptable ready state, halting requests.`)
+        global.SERVE_REQUESTS = false
+      }
+      if (!global.SERVE_REQUESTS) {
+        if (m.c.filter(shard => !shard.ready).length === 0) {
+          console.log('---------------------------------------------------------------------------------------Dashboard now resuming request serving.')
+          global.SERVE_REQUESTS = true
+        }
+      }
+    })
+  }
+})
 
-function waitFor (op, id) {
+const validOps = ['GUILD_FETCH_RESPONSE', 'CHANNEL_FETCH_RESPONSE', 'GET_LASTNAMES_RESPONSE', 'TEST_MESSAGE', 'GET_USER_RESPONSE', 'GET_LASTNAMES_RESPONSE', 'GET_EDITABLE_GUILDS_RESPONSE', 'GET_ACCESSABLE_CHANNELS_RESPONSE', 'RECACHE_REDIS_RESPONSE', 'GET_USER_PERMS_GUILD_RESPONSE']
+
+function waitFor(op, id) {
   return new Promise((resolve, reject) => {
-    process.on('message', function wait (m) {
-      if (!validOps.includes(m.op)) {
-      } else {
+    process.on('message', function wait(m) {
+      try {
+        m = JSON.parse(m)
+      } catch (e) {
+        logger.error('Invalid packet received from shard manager!', e)
+      }
+      if (validOps.includes(m.op)) {
         let timeout = setTimeout(() => {
           reject('Timeout') // eslint-disable-line
           process.removeListener('message', wait)

@@ -23,17 +23,17 @@ html(lang='en')
     link(href='/vendors/bootstrap-daterangepicker/daterangepicker.css', rel='stylesheet')
     // Custom Theme Style
     link(href='/build/css/custom.min.css', rel='stylesheet')
-    #popup.modal-dialog.modal-sm
-            .modal-content
-              .modal-header
-                button.close(type='button', data-dismiss='modal', aria-label='Close')#close
-                  span(aria-hidden='true')#close ×
-                h4.modal-title Configuration Response
-              .modal-body
-                p#message-content
-                  | Oof
-              .modal-footer#close
-                button.btn.btn-default(type='button', data-dismiss='popup', onclick="hidePopup()")#close Close
+    #popup.modal-dialog.modal-sm(style="position: absolute; z-index: 1000000; top: 50%; left: 50%; transform: translate(-50%, -50%);")
+      .modal-content
+        .modal-header
+          button.close(type='button', data-dismiss='modal', aria-label='Close')#close
+            span(aria-hidden='true')#close ×
+          h4.modal-title Configuration Response
+        .modal-body
+          p#message-content
+            | Oof
+        .modal-footer#close
+          button.btn.btn-default(type='button', data-dismiss='popup', onclick="hidePopup()")#close Close
   body.nav-md
     .container.body
       .main_container
@@ -74,6 +74,14 @@ html(lang='en')
                     a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
                       i.fa.fa-envelope
                       |  Invite
+                  li
+                    a(href='https://www.patreon.com/logger', target='_blank')
+                      i.fa.fa-hand-peace-o
+                      |  Patreon
+                  li
+                    a(href='https://discord.gg/ed7Gaa3', target='_blank')
+                      i.fa.fa-life-ring
+                      |  Discord Server
             // /sidebar menu
             // /menu footer buttons
             .sidebar-footer.hidden-small
@@ -95,14 +103,23 @@ html(lang='en')
                     span.fa.fa-angle-down
                   ul.dropdown-menu.dropdown-usermenu.pull-right
                     li
-                      a(href='javascript:;') Help
+                      a(href='https://discord.gg/ed7Gaa3') Help
                     li
                       a(href='/logout')
                         i.fa.fa-sign-out.pull-right
                         |  Log Out
                 li
-                  a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
-                    | Invite
+                    a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
+                      i.fa.fa-envelope
+                      |  Invite
+                li
+                  a(href='https://www.patreon.com/logger', target='_blank')
+                    i.fa.fa-hand-peace-o
+                    |  Patreon
+                li
+                  a(href='https://discord.gg/ed7Gaa3', target='_blank')
+                    i.fa.fa-life-ring
+                    |  Discord Server
         .right_col(role='main')
           h1.text-center Configuring #{guildName}:
           h2.text-center Logged in as #{user.username}
@@ -190,9 +207,7 @@ html(lang='en')
           .col-md-6.col-xs-12
             .x_panel
               .x_title
-                h2
-                  | Modules
-                  small Hover to see more info
+                h2 Modules #[small Hover to see more info]
                 ul.nav.navbar-right.panel_toolbox
                   li.pull-right
                     a.collapse-link
@@ -209,13 +224,13 @@ html(lang='en')
                       each event in toggledEvents
                         - if (!event.disabled) 
                           .checkbox
-                            label
+                            label(data-toggle="tooltip", data-placement="left", title="#{event.tooltip}")
                               input.flat(type='checkbox', name='#{event.name}', checked)
                               |  #{event.name}
                             br
                         - else 
                           .checkbox
-                            label
+                            label(data-toggle="tooltip", data-placement="left", title="#{event.tooltip}")
                               input.flat(title="wew", type='checkbox', name='#{event.name}')
                               |  #{event.name}
                             br
@@ -258,14 +273,15 @@ html(lang='en')
         $("#submitchannels").click(function () {
           $.ajax({
                 type:'POST',
-                url:'https://whatezlife.com/savechannels',
+                url:'http://100.7.25.242:8000/savechannels',
                 data: $("#dataform").serializeJSON(),
                 success:function(msg) {
                     message.innerHTML = msg.message
                     modal.style.display = 'block'
                 },
                 error:function (msg) {
-                    message.innerHTML = msg.responseJSON.message
+                  console.log(msg)
+                    message.innerHTML = msg.message
                     modal.style.display = 'block'
                 }
             })
@@ -274,14 +290,14 @@ html(lang='en')
         $("#submitmodules").click(function () {
           $.ajax({
                 type:'POST',
-                url:'https://whatezlife.com/savemodules',
+                url:'http://100.7.25.242:8000/savemodules',
                 data: $("#modulesform").serializeJSON(),
                 success:function(msg) {
                     message.innerHTML = msg.message
                     modal.style.display = 'block'
                 },
                 error:function (msg) {
-                    message.innerHTML = msg.responseJSON.message
+                    message.innerHTML = msg.message
                     modal.style.display = 'block'
                 }
             })

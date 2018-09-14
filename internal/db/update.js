@@ -3,6 +3,14 @@ const getDoc = require('./read').getDoc
 const expectedKeys = ['guildID', 'all', 'mod', 'server', 'voice', 'messages', 'joinlog']
 let feeds = ['joinlog', 'mod', 'server', 'voice', 'messages']
 
+function updateUserDoc (userID, toUpdate) {
+  return new Promise((resolve, reject) => {
+    r.db('Logger').table('Users').get(userID).update(toUpdate).run().then((doc) => {
+      resolve(doc)
+    }).catch(reject)
+  })
+}
+
 function updateDoc (guildID, toUpdate) {
   return new Promise((resolve, reject) => {
     r.db('Logger').table('Guilds').get(guildID).update(toUpdate).run().then((doc) => {
@@ -71,5 +79,32 @@ function setByType (guildID, type, value, doc) {
   })
 }
 
+function updateChannelConfig(body, doc) {
+  return new Promise((resolve, reject) => {
+    let bodyKeys = Object.keys(body)
+    if (body['all'] && (body['mod'] || body['server'] || body['voice'] || body['messages'] || body['joinlog'])) {
+      reject({
+        message: 'To honor ratelimits set by Discord, you cannot log "all" events to one channel and others like "mod" at the same time.'
+      })
+    } else {
+      bodyKeys.forEach((type) => {
+        if (type === 'all') {
+          doc.logchannel = body['all']
+        } else if (type === 'modlog') {
+          doc.feeds.mod.channelID = body['modlog']
+        } else if (type !== 'guildID') {
+          console.log('------------------TYPE: ', type, ' PREVIOUS VAL: ', doc.feeds[type].channelID, ' NOW: ', body[type])
+          doc.feeds[type].channelID = body[type]
+        }
+      })
+      updateDoc(doc.id, doc).then(() => {
+        resolve()
+      }).catch(reject)
+    }
+  })
+}
+
+exports.updateChannelConfig = updateChannelConfig
 exports.clearAndSaveType = clearAndSaveType
 exports.updateDoc = updateDoc
+exports.updateUserDoc = updateUserDoc

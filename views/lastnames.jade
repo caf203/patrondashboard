@@ -12,6 +12,17 @@ html(lang='en')
     link(href='/vendors/nprogress/nprogress.css', rel='stylesheet')
     link(href='/vendors/bootstrap-progressbar/css/bootstrap-progressbar-3.3.4.min.css', rel='stylesheet')
     link(href='/build/css/custom.min.css', rel='stylesheet')
+  #popup.modal-dialog.modal-sm(style="position: absolute; z-index: 1000000; top: 50%; left: 50%; transform: translate(-50%, -50%);")
+    .modal-content
+      .modal-header
+        button.close(type='button', data-dismiss='modal', aria-label='Close')#close
+          span(aria-hidden='true')#close ×
+        h4.modal-title Configuration Response
+          .modal-body
+            p#message-content
+              | Oof
+          .modal-footer#close
+            button.btn.btn-default(type='button', data-dismiss='popup', onclick="hidePopup()")#close Close
   body.nav-md
     .container.body
       .main_container
@@ -52,6 +63,14 @@ html(lang='en')
                     a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
                       i.fa.fa-envelope
                       |  Invite
+                  li
+                    a(href='https://www.patreon.com/logger', target='_blank')
+                      i.fa.fa-hand-peace-o
+                      |  Patreon
+                  li
+                    a(href='https://discord.gg/ed7Gaa3', target='_blank')
+                      i.fa.fa-life-ring
+                      |  Discord Server
             // /sidebar menu
             // /menu footer buttons
             .sidebar-footer.hidden-small
@@ -73,19 +92,28 @@ html(lang='en')
                     span.fa.fa-angle-down
                   ul.dropdown-menu.dropdown-usermenu.pull-right
                     li
-                      a(href='javascript:;') Help
+                      a(href='https://discord.gg/ed7Gaa3') Help
                     li
                       a(href='/logout')
                         i.fa.fa-sign-out.pull-right
                         |  Log Out
                 li
-                  a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
-                    | Invite
+                    a(href='https://discordapp.com/oauth2/authorize?client_id=298822483060981760&scope=bot&permissions=380065', target='_blank')
+                      i.fa.fa-envelope
+                      |  Invite
+                li
+                  a(href='https://www.patreon.com/logger', target='_blank')
+                    i.fa.fa-hand-peace-o
+                    |  Patreon
+                li
+                  a(href='https://discord.gg/ed7Gaa3', target='_blank')
+                    i.fa.fa-life-ring
+                    |  Discord Server
         // /top navigation
         // page content
         .right_col(role='main')
           h1.text-center Your last names #[small (recent to old descending)]:
-          h4.text-center Logged in as #{user.username}
+          h4.text-center Logged in as #{user.username}        #[button(onclick="clearLastNames()").btn.btn-danger Clear saved names]
           br
           ul.list-group
             each name in names
@@ -105,3 +133,33 @@ html(lang='en')
     script(src='/vendors/nprogress/nprogress.js')
     script(src='/vendors/bootstrap-progressbar/bootstrap-progressbar.min.js')
     script(src='/build/js/custom.min.js')
+    script.
+      let modal = document.getElementById('popup')
+      let span = document.getElementById('close')
+      let message = document.getElementById('message-content')
+      let btn = document.getElementById('submitB')
+      modal.style.display = "none";
+      function hidePopup() {
+        modal.style.display = "none"
+      }
+      span.onclick = hidePopup
+      window.onclick = function(event) {
+          if (event.target == modal) {
+              hidePopup()
+          }
+      }
+      function clearLastNames() {
+        $.ajax({
+                type:'POST',
+                url:'http://100.7.25.242:8000/clearlastnames',
+                success:function(msg) {
+                    message.innerHTML = msg.message
+                    modal.style.display = 'block'
+                },
+                error:function (msg) {
+                  console.log(msg)
+                  message.innerHTML = msg.message
+                  modal.style.display = 'block'
+                }
+            })
+      }
