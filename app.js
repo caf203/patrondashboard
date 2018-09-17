@@ -20,6 +20,8 @@ const saveModulesHandler = require('./internal/handlers/moduleshandler')
 const clearLastNames = require('./internal/handlers/clearlastnames')
 const IPC = require('./internal/clients/ipcclient')
 
+process.title = 'Logger Dashboard'
+
 global.SERVE_REQUESTS = false
 
 if (process.send) {
