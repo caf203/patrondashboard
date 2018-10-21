@@ -8,4 +8,13 @@ function getDoc (guildID) {
   })
 }
 
+function getUserDoc(userID) {
+  return new Promise((resolve, reject) => {
+    r.db('Logger').table('Users').get(userID).run().then((uDoc) => {
+      resolve(uDoc)
+    }).catch(reject)
+  })
+}
+
+exports.getUserDoc = getUserDoc
 exports.getDoc = getDoc

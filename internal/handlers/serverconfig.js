@@ -1,5 +1,7 @@
 const IPCClient = require('../clients/ipcclient')
 const getDoc = require('../db/read').getDoc
+const REST = require('../clients/restclient')
+const Eris = require('eris')
 
 let eventTooltips = {
   'channelCreate': 'When a channel is created.',
@@ -23,7 +25,8 @@ let eventTooltips = {
   'voiceChannelJoin': 'When a member joins a voice channel.',
   'voiceStateUpdate': 'When a member in a voice channel is muted or deafened by another guild member.',
   'voiceChannelSwitch': 'When a member moves from one voice channel to another.',
-  'guildEmojisUpdate': 'When an emoji gets uploaded, deleted, or updated.' }
+  'guildEmojisUpdate': 'When an emoji gets uploaded, deleted, or updated.'
+}
 
 const allEvents = [
   'channelCreate',
@@ -47,78 +50,68 @@ const allEvents = [
   'voiceChannelJoin',
   'voiceStateUpdate',
   'voiceChannelSwitch',
-  'guildEmojisUpdate' ]
+  'guildEmojisUpdate']
 
 module.exports = (req, res) => {
-  let guilds = req.user.guilds.slice()
-  if (isNaN(req.params.id)) {
-    res.redirect('/')
-  } else {
-    IPCClient.getEditableGuilds(req.user.guilds, req.user.id).then((guilds) => {
-      if (guilds.map(g => g.id).includes(req.params.id)) {
-        getDoc(req.params.id).then((doc) => {
-          let eventInfo = {}
-          let expectedLength = Object.keys(doc.feeds)
-          selectedChannels = {}
-          if (doc.logchannel) {
-            IPCClient.getChannel(doc.logchannel).then((channel) => {
-              selectedChannels['all'] = {
-                id: channel.id,
-                name: channel.name
-              }
-            })
-          } else {
-            selectedChannels['all'] = {
-              id: '',
-              name: ''
+  let guilds = []
+  req.user.guilds.forEach((guild) => {
+    let perms = new Eris.Permission(guild.permissions).json
+    if (guild.owner || perms['manageGuild'] || perms['manageChannels']) {
+      guilds.push({
+        name: guild.name,
+        id: guild.id,
+        owner: guild.owner && 'You',
+        iconURL: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=256` : 'https://s15.postimg.cc/nke6jbnyz/redcircle.png'
+      })
+    }
+  })
+  if (guilds.map(g => g.id).includes(req.params.id)) {
+    getDoc(req.params.id).then((doc) => {
+      REST.getChannels(req.params.id).then((channels) => {
+        channels = channels.filter(c => c.type === 0)
+        let eventInfo = {}
+        let expectedLength = Object.keys(doc.feeds)
+        selectedChannels = {}
+        if (doc.logchannel) {
+          let channel = channels.get(doc.logchannel)
+          selectedChannels['all'] = {
+            id: channel.id,
+            name: channel.name
+          }
+        } else {
+          selectedChannels['all'] = {
+            id: '',
+            name: ''
+          }
+        }
+        Object.keys(doc.feeds).forEach((key) => {
+          if (doc.feeds[key].channelID) {
+            let channel = channels.find(c => c.id === doc.feeds[key].channelID)
+            selectedChannels[key] = {
+              id: channel.id,
+              name: channel.name
             }
           }
-          Object.keys(doc.feeds).forEach((key) => {
-            if (doc.feeds[key].channelID) {
-              IPCClient.getChannel(doc.feeds[key].channelID).then((channel) => {
-                selectedChannels[key] = {
-                  id: channel.id,
-                  name: channel.name
-                }
-              }).catch(() => {
-                selectedChannels[key] = {
-                  id: doc.feeds[key].channelID
-                }
-              })
-            }
-          })
-          allEvents.forEach((event) => {
-            if (doc.disabledEvents.includes(event)) {
-              eventInfo[event] = {
-                disabled: true,
-                name: event,
-                tooltip: eventTooltips[event]
-              }
-            } else {
-              eventInfo[event] = {
-                disabled: false,
-                name: event,
-                tooltip: eventTooltips[event]
-              }
-            }
-          })
-          IPCClient.getAccessableChannels(req.params.id, req.user.id).then((channels) => {
-            IPCClient.getServer(req.params.id).then((guild) => {
-              res.render('configure', { channels: channels, guildID: req.params.id, selectedChannels: selectedChannels, user: req.user, guildName: guild.name, allEvents: allEvents, toggledEvents: eventInfo })
-            }).catch((e) => {
-              console.error(e)
-              res.render('error', { message: 'Error fetching that server!' })
-            })
-          }).catch((e) => {
-            console.error(e)
-            res.render('error', { message: 'Error fetching channels that I can log to!' })
-          })
         })
-      } else {
-        res.render('unauthorized', { message: 'You don\'t have the required permissions to edit this server.' })
-      }
-    }).catch((e) => {
-      res.render('error', { message: 'Something borked while checking backend edit stuff, sorry. Might want to let Piero#2048 know.' })
+        allEvents.forEach((event) => {
+          if (doc.disabledEvents.includes(event)) {
+            eventInfo[event] = {
+              disabled: true,
+              name: event,
+              tooltip: eventTooltips[event]
+            }
+          } else {
+            eventInfo[event] = {
+              disabled: false,
+              name: event,
+              tooltip: eventTooltips[event]
+            }
+          }
+        })
+        res.render('configure', { channels: channels, guildID: req.params.id, selectedChannels: selectedChannels, user: req.user, guildName: guilds.find(g => g.id === req.params.id).name, allEvents: allEvents, toggledEvents: eventInfo })
+      })
     })
+  } else {
+    res.render('unauthorized', { message: 'You don\'t have the required permissions to edit this server.' })
   }
 }

@@ -19,6 +19,9 @@ const saveConfigHandler = require('./internal/handlers/saveconfig')
 const saveModulesHandler = require('./internal/handlers/moduleshandler')
 const clearLastNames = require('./internal/handlers/clearlastnames')
 const IPC = require('./internal/clients/ipcclient')
+const Read = require('./internal/db/read')
+const Create = require('./internal/db/create')
+const Eris = require('eris')
 
 process.title = 'Logger Dashboard'
 
@@ -125,22 +128,32 @@ app.get('/oauth/callback', passport.authenticate('discord', { failureRedirect: '
     })
 
 app.get('/lastnames', checkAuth, (req, res) => {
-  IPC.getLastNames(req.user.id).then((names) => {
-    names = names.filter((name, pos) => names.indexOf(name) === pos).reverse().map((n, pos) => `${++pos}: ${n}`)
-    res.render('lastnames', { user: req.user, names: names })
-  }).catch((e) => {
-    console.error(e)
-    res.render('error', { 'message': 'Something went wrong while fetching your names!' })
+  Read.getUserDoc(req.user.id).then((doc) => {
+    doc.names = doc.names.filter((name, pos) => doc.names.indexOf(name) === pos).reverse().map((n, pos) => `${++pos}: ${n}`)
+    res.render('lastnames', { user: req.user, names: doc.names })
+  }).catch(() => {
+    Create.createUserDoc(req.user.id).then(() => {
+      res.render('lastnames', { user: req.user, names: [] })
+    }).catch((e) => {
+      console.error(e)
+      res.render('error', { 'message': 'Something happened while fetching your last names! Please let James Bond#0007 know.' })
+    })
   })
 })
 
 app.get('/serverselector', checkAuth, (req, res) => {
-  IPC.getEditableGuilds(req.user.guilds, req.user.id).then((guilds) => {
-    res.render('serverselector', { user: req.user, guilds: guilds.length !== 0 ? guilds : ['None'] })
-  }).catch((e) => {
-    console.error(e)
-    res.render('error', { message: 'Something went wrong while getting shared servers!' })
+  let guilds = []
+  req.user.guilds.forEach((guild) => {
+    if (guild.owner || new Eris.Permission(guild.permissions).json['manageGuild']) {
+      guilds.push({
+        name: guild.name,
+        id: guild.id,
+        owner: guild.owner && 'You',
+        iconURL: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=256` : 'https://s15.postimg.cc/nke6jbnyz/redcircle.png'
+      })
+    }
   })
+  res.render('serverselector', { user: req.user, guilds: guilds.length !== 0 ? guilds : ['None'] })
 })
 
 app.get('/logout', (req, res) => {
