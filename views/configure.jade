@@ -273,7 +273,7 @@ html(lang='en')
         $("#submitchannels").click(function () {
           $.ajax({
                 type:'POST',
-                url:'http://100.7.25.242:8000/savechannels',
+                url:'https://pierodev.com/savechannels',
                 data: $("#dataform").serializeJSON(),
                 success:function(msg) {
                     message.innerHTML = msg.message
@@ -290,7 +290,7 @@ html(lang='en')
         $("#submitmodules").click(function () {
           $.ajax({
                 type:'POST',
-                url:'http://100.7.25.242:8000/savemodules',
+                url:'https://pierodev.com/savemodules',
                 data: $("#modulesform").serializeJSON(),
                 success:function(msg) {
                     message.innerHTML = msg.message
