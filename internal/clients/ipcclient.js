@@ -1,4 +1,5 @@
 const logger = require('../logger')
+const REST = require('./restclient')
 
 class IPCClient {
   getServer(id) {
@@ -52,25 +53,9 @@ class IPCClient {
     })
   }
 
-  getEditableGuilds(guilds, userID) {
+  getAccessableChannels(guildID, userID) { // EDIT: This will not query the bot asking for accessable channels. Instead, it will send a GET request to the guild/channels endpoint.
     return new Promise((resolve, reject) => {
-      process.send(JSON.stringify({
-        'op': 'GET_EDITABLE_GUILDS',
-        'c': guilds,
-        'id': userID
-      }))
-      waitFor('GET_EDITABLE_GUILDS_RESPONSE', userID).then(resolve).catch(reject)
-    })
-  }
-
-  getAccessableChannels(guildID, userID) {
-    return new Promise((resolve, reject) => {
-      process.send(JSON.stringify({
-        'op': 'GET_ACCESSABLE_CHANNELS',
-        'c': guildID,
-        'id': userID
-      }))
-      waitFor('GET_ACCESSABLE_CHANNELS_RESPONSE', userID).then(resolve).catch(reject)
+      REST.getChannels(guildID).then(resolve).catch(reject)
     })
   }
 
@@ -85,26 +70,6 @@ class IPCClient {
   }
 }
 
-process.on('message', (m) => {
-  try {
-    m = JSON.parse(m)
-  } catch (_) { }
-  if (m.op === 'HEARTBEAT') {
-    m.c.forEach((shard) => {
-      if (shard.ready !== true) {
-        console.log(`Shard ${shard.shardID} returned an unacceptable ready state, halting requests.`)
-        global.SERVE_REQUESTS = false
-      }
-      if (!global.SERVE_REQUESTS) {
-        if (m.c.filter(shard => !shard.ready).length === 0) {
-          console.log('---------------------------------------------------------------------------------------Dashboard now resuming request serving.')
-          global.SERVE_REQUESTS = true
-        }
-      }
-    })
-  }
-})
-
 const validOps = ['GUILD_FETCH_RESPONSE', 'CHANNEL_FETCH_RESPONSE', 'GET_LASTNAMES_RESPONSE', 'TEST_MESSAGE', 'GET_USER_RESPONSE', 'GET_LASTNAMES_RESPONSE', 'GET_EDITABLE_GUILDS_RESPONSE', 'GET_ACCESSABLE_CHANNELS_RESPONSE', 'RECACHE_REDIS_RESPONSE', 'GET_USER_PERMS_GUILD_RESPONSE']
 
 function waitFor(op, id) {
@@ -115,11 +80,14 @@ function waitFor(op, id) {
       } catch (e) {
         logger.error('Invalid packet received from shard manager!', e)
       }
-      if (validOps.includes(m.op)) {
-        let timeout = setTimeout(() => {
-          reject('Timeout') // eslint-disable-line
-          process.removeListener('message', wait)
-        }, 10000)
+      console.log(m)
+      let timeout = setTimeout(() => {
+        reject('Timeout') // eslint-disable-line
+        console.error('timed out on ', op, id)
+        process.removeListener('message', wait)
+      }, 10000)
+      if (validOps.includes(m.op) && m.op === op) {
+        console.log(`Hey, the dashboard returned ${m.c ? m.c.name : 'nothing'} from the requested ID of ${m.requestedID}`)
         if (m.requestedID === id) {
           resolve(m.c) // resolve the parsed message content
           process.removeListener('message', wait)

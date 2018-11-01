@@ -1,6 +1,7 @@
 const IPCClient = require('../clients/ipcclient')
 const getDoc = require('../db/read').getDoc
 const updateDoc = require('../db/update').updateDoc
+const loadToRedis = require('../db/redis').loadToRedis
 const Eris = require('eris')
 const allEvents = [
   'channelCreate',
@@ -58,7 +59,7 @@ module.exports = (req, res) => {
           doc.disabledEvents = disabled
           updateDoc(req.body.guildID, { 'disabledEvents': doc.disabledEvents }).then((updResponse) => {
             res.status(200).json({ 'message': 'Successfully saved modules!' })
-            IPCClient.recacheBot(req.body.guildID)
+            loadToRedis(req.body.guildID)
           }).catch((e) => {
             console.error(e)
             res.status(500).json({ 'message': 'Uh oh! Something went wrong. Please try again.' })

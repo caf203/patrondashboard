@@ -93,7 +93,6 @@ function updateChannelConfig(body, doc) {
         } else if (type === 'modlog') {
           doc.feeds.mod.channelID = body['modlog']
         } else if (type !== 'guildID') {
-          console.log('------------------TYPE: ', type, ' PREVIOUS VAL: ', doc.feeds[type].channelID, ' NOW: ', body[type])
           doc.feeds[type].channelID = body[type]
         }
       })

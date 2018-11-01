@@ -25,15 +25,6 @@ const Eris = require('eris')
 
 process.title = 'Logger Dashboard'
 
-global.SERVE_REQUESTS = false
-
-if (process.send) {
-  console.log('Connected to bot process via IPC.')
-} else {
-  console.log('Process started without IPC! The dashboard will not function unless it is spawned from the bot')
-  process.exit()
-}
-
 passport.serializeUser(function (user, done) {
   done(null, user)
 })
@@ -79,14 +70,6 @@ if (Config.core.useSSL) {
 }
 app.set('view engine', 'jade')
 app.locals.basedir = path.join(__dirname, 'views')
-
-app.use(function (req, res, next) {
-  if (!global.SERVE_REQUESTS && req.path !== '/') {
-    res.render('booting')
-  } else {
-    next()
-  }
-}) 
 
 app.get('/', checkAuth, (req, res) => {
   res.render('authenticated', { user: req.user })

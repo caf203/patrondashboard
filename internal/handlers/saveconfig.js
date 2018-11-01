@@ -3,6 +3,7 @@ const getDoc = require('../db/read').getDoc
 const updateDoc = require('../db/update').updateDoc
 const clearAndSaveType = require('../db/update').clearAndSaveType
 const updateChannelConfig = require('../db/update').updateChannelConfig
+const loadToRedis = require('../db/redis').loadToRedis
 const Eris = require('eris')
 
 module.exports = (req, res) => {
@@ -22,11 +23,8 @@ module.exports = (req, res) => {
       if (guilds.map(g => g.id).includes(req.body.guildID)) {
         getDoc(req.body.guildID).then((doc) => {
           updateChannelConfig(req.body, doc).then(() => {
-            IPCClient.recacheBot(req.body.guildID).then(() => {
-              res.status(200).json({'message': `Your response has been successfully submitted.`})
-            }).catch((e) => {
-              res.status(500).json({'message': `Timeout while waiting for a response, is the bot running?`})
-            })
+            res.status(200).json({'message': `Your response has been successfully submitted.`})
+            loadToRedis(req.body.guildID)
           }).catch(() => {
             if (e.message) {
               res.status(400).json({'message': e.message})
