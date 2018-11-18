@@ -73,7 +73,7 @@ module.exports = (req, res) => {
         let expectedLength = Object.keys(doc.feeds)
         selectedChannels = {}
         if (doc.logchannel) {
-          let channel = channels.get(doc.logchannel)
+          let channel = channels.find(c => c.id === doc.logchannel)
           selectedChannels['all'] = {
             id: channel.id,
             name: channel.name
@@ -109,6 +109,9 @@ module.exports = (req, res) => {
           }
         })
         res.render('configure', { channels: channels, guildID: req.params.id, selectedChannels: selectedChannels, user: req.user, guildName: guilds.find(g => g.id === req.params.id).name, allEvents: allEvents, toggledEvents: eventInfo })
+      }).catch(() => {
+        console.log('FORBIDDEN WHY IS THIS SHOWING')
+        res.render('unauthorized', { message: 'I cannot see this server!' })
       })
     })
   } else {

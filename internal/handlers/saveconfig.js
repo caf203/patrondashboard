@@ -25,7 +25,7 @@ module.exports = (req, res) => {
           updateChannelConfig(req.body, doc).then(() => {
             res.status(200).json({'message': `Your response has been successfully submitted.`})
             loadToRedis(req.body.guildID)
-          }).catch(() => {
+          }).catch((e) => {
             if (e.message) {
               res.status(400).json({'message': e.message})
             } else {
