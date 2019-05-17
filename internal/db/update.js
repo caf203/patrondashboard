@@ -1,8 +1,7 @@
 const pool = require('../clients/postgres')
 const aes = require('../clients/aes')
 const getDoc = require('./read').getDoc
-const expectedKeys = ['guildID', 'all', 'mod', 'server', 'voice', 'messages', 'joinlog']
-let feeds = ['joinlog', 'mod', 'server', 'voice', 'messages']
+const getUser = require('./read').getUserDoc
 
 async function updateUserDoc (userID, toUpdate) {
   const doc = await getUser(userID)

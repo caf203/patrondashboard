@@ -22,7 +22,7 @@ const Read = require('./internal/db/read')
 const Create = require('./internal/db/create')
 const Eris = require('eris')
 const Bezerk = require('./internal/clients/bezerk')
-const Raven = require()
+const Raven = require('raven')
 
 process.title = 'Logger Dashboard v2'
 
