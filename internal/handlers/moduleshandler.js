@@ -1,7 +1,6 @@
-const IPCClient = require('../clients/ipcclient')
+const Bezerk = require('../clients/bezerk')
 const getDoc = require('../db/read').getDoc
-const updateDoc = require('../db/update').updateDoc
-const loadToRedis = require('../db/redis').loadToRedis
+const updateDisabledEvents = require('../db/update').updateDisabledEvents
 const Eris = require('eris')
 const allEvents = [
   'channelCreate',
@@ -21,6 +20,7 @@ const allEvents = [
   'guildMemberKick',
   'guildMemberRemove',
   'guildMemberUpdate',
+  'guildMemberNickUpdate',
   'voiceChannelLeave',
   'voiceChannelJoin',
   'voiceStateUpdate',
@@ -49,6 +49,11 @@ module.exports = (req, res) => {
     if (valid) {
       let perms = new Eris.Permission(req.user.guilds.find(g => g.id === req.body.guildID).permissions).json
       if (perms['administrator'] || perms['manageGuild'] || perms['manageChannels']) {
+        Bezerk.send({
+          op: '2005',
+          c: `bot.guilds.get('${req.body.guildID}').name`
+        }).then(responses => {
+          if (responses && responses.length !== 0) {
         getDoc(req.body.guildID).then((doc) => {
           let disabled = []
           allEvents.forEach((event) => {
@@ -56,15 +61,23 @@ module.exports = (req, res) => {
               disabled.push(event)
             }
           })
-          doc.disabledEvents = disabled
-          updateDoc(req.body.guildID, { 'disabledEvents': doc.disabledEvents }).then((updResponse) => {
+          console.log('DISABLED', disabled, req.body.guildID)
+          doc.disabled_events = disabled
+          updateDisabledEvents(req.body.guildID, doc.disabled_events).then((updResponse) => {
             res.status(200).json({ 'message': 'Successfully saved modules!' })
-            loadToRedis(req.body.guildID)
+            Bezerk.send({
+              op: '2005',
+              c: `recache ${doc.id}`
+            })
           }).catch((e) => {
             console.error(e)
             res.status(500).json({ 'message': 'Uh oh! Something went wrong. Please try again.' })
           })
         })
+      } else {
+        res.status(403).json({ 'message': 'You don\'t have the required permissions to do that!' })
+      }
+      })
       } else {
         res.status(403).json({ 'message': 'You don\'t have the required permissions to do that!' })
       }

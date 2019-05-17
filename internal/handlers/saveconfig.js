@@ -1,17 +1,19 @@
-const IPCClient = require('../clients/ipcclient')
+const Bezerk = require('../clients/bezerk')
+const updateEventLogs = require('../db/update').updateEventLogs
 const getDoc = require('../db/read').getDoc
-const updateDoc = require('../db/update').updateDoc
-const clearAndSaveType = require('../db/update').clearAndSaveType
-const updateChannelConfig = require('../db/update').updateChannelConfig
-const loadToRedis = require('../db/redis').loadToRedis
 const Eris = require('eris')
 
 module.exports = (req, res) => {
   if (Object.keys(req.body).length !== 0) {
     let guilds = []
-    req.user.guilds.forEach((guild) => {
+    req.user.guilds.forEach(async (guild) => {
       let perm = new Eris.Permission(guild.permissions).json
       if (guild.owner || perm['manageGuild'] || perm['manageChannels']) {
+        const responses = await Bezerk.send({
+          op: '2005',
+          c: `bot.guilds.get('${guild.id}').name`
+        })
+        if (responses && responses.length !== 0) {
         guilds.push({
           name: guild.name,
           id: guild.id,
@@ -19,12 +21,19 @@ module.exports = (req, res) => {
           iconURL: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=256` : 'https://s15.postimg.cc/nke6jbnyz/redcircle.png'
         })
       }
+      }
     })
+    setTimeout(() => {
       if (guilds.map(g => g.id).includes(req.body.guildID)) {
         getDoc(req.body.guildID).then((doc) => {
-          updateChannelConfig(req.body, doc).then(() => {
+          delete req.body.guildID
+          updateEventLogs(doc.id, req.body).then(() => {
             res.status(200).json({'message': `Your response has been successfully submitted.`})
-            loadToRedis(req.body.guildID)
+            Bezerk.send({
+              op: '2005',
+              c: `recache ${doc.id}`
+            })
+            // loadToRedis(req.body.guildID)
           }).catch((e) => {
             if (e.message) {
               res.status(400).json({'message': e.message})
@@ -36,6 +45,7 @@ module.exports = (req, res) => {
       } else {
         res.status(403).json({'message': 'You can\'t edit that server!'})
       }
+    }, 1000)
   } else {
     res.status(400).json({'message': 'Malformed request'})
   }

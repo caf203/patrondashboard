@@ -7,8 +7,6 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const fs = require('fs')
 const Config = require('./config.json')
-const redis = require('redis')
-const RedisStore = require('connect-redis')(session)
 const client = redis.createClient()
 const favicon = require('serve-favicon')
 const superagent = require('superagent')
@@ -18,12 +16,13 @@ const serverConfig = require('./internal/handlers/serverconfig')
 const saveConfigHandler = require('./internal/handlers/saveconfig')
 const saveModulesHandler = require('./internal/handlers/moduleshandler')
 const clearLastNames = require('./internal/handlers/clearlastnames')
-const IPC = require('./internal/clients/ipcclient')
 const Read = require('./internal/db/read')
 const Create = require('./internal/db/create')
 const Eris = require('eris')
+const Bezerk = require('./internal/clients/bezerk')
+const Raven = require('raven')
 
-process.title = 'Logger Dashboard'
+process.title = 'Logger Dashboard v2'
 
 passport.serializeUser(function (user, done) {
   done(null, user)
@@ -31,6 +30,8 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (obj, done) {
   done(null, obj)
 })
+
+Raven.config(Config.dev.ravenURI).install()
 
 var Strategy = require('passport-discord').Strategy
 
@@ -112,31 +113,43 @@ app.get('/oauth/callback', passport.authenticate('discord', { failureRedirect: '
 
 app.get('/lastnames', checkAuth, (req, res) => {
   Read.getUserDoc(req.user.id).then((doc) => {
-    doc.names = doc.names.filter((name, pos) => doc.names.indexOf(name) === pos).reverse().map((n, pos) => `${++pos}: ${n}`)
-    res.render('lastnames', { user: req.user, names: doc.names })
-  }).catch(() => {
-    Create.createUserDoc(req.user.id).then(() => {
-      res.render('lastnames', { user: req.user, names: [] })
-    }).catch((e) => {
-      console.error(e)
+    if (!doc) {
+      Create.createUserDoc(req.user.id).then(() => {
+        res.render('lastnames', { user: req.user, names: [] })
+      }).catch((e) => {
+        console.error(e)
+        res.render('error', { 'message': 'Something happened while fetching your last names! Please let James Bond#0007 know.' })
+      })
+    } else {
+      doc.names = doc.names.filter((name, pos) => doc.names.indexOf(name) === pos && name !== 'placeholder').reverse().map((n, pos) => `${++pos}: ${n}`)
+      res.render('lastnames', { user: req.user, names: doc.names })
+    }
+  }).catch((e) => {
       res.render('error', { 'message': 'Something happened while fetching your last names! Please let James Bond#0007 know.' })
     })
   })
-})
 
-app.get('/serverselector', checkAuth, (req, res) => {
+app.get('/serverselector', checkAuth, async (req, res) => {
   let guilds = []
-  req.user.guilds.forEach((guild) => {
+  req.user.guilds.forEach(async (guild) => {
     if (guild.owner || new Eris.Permission(guild.permissions).json['manageGuild']) {
-      guilds.push({
-        name: guild.name,
-        id: guild.id,
-        owner: guild.owner && 'You',
-        iconURL: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=256` : 'https://s15.postimg.cc/nke6jbnyz/redcircle.png'
+      const responses = await Bezerk.send({
+        op: '2005',
+        c: `bot.guilds.get('${guild.id}').name`
       })
+      if (responses && responses.length !== 0) {
+        guilds.push({
+          name: guild.name,
+          id: guild.id,
+          owner: guild.owner && 'You',
+          iconURL: guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=256` : 'https://s15.postimg.cc/nke6jbnyz/redcircle.png'
+        })
+      }
     }
   })
-  res.render('serverselector', { user: req.user, guilds: guilds.length !== 0 ? guilds : ['None'] })
+  await setTimeout(() => {
+    res.render('serverselector', { user: req.user, guilds: guilds.length !== 0 ? guilds : ['None'] })
+  }, 1000)
 })
 
 app.get('/logout', (req, res) => {
@@ -189,6 +202,16 @@ if (Config.core.useSSL) {
 } else {
   app.listen(Config.core.port, function (err) {
     if (err) return console.error(err)
-    console.log('Dashboard running without ssl')
+    console.log('Dashboard running without ssl on port', Config.core.port)
   })
 }
+
+process.on('unhandledRejection', (e) => {
+  console.error(e)
+  Raven.captureException(e.stack, {level: 'error'}) // handle when Discord freaks out
+})
+
+process.on('uncaughtException', (e) => {
+  console.error(e)
+  Raven.captureException(e.stack, {level: 'fatal'})
+})
