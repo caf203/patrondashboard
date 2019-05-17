@@ -7,6 +7,8 @@ const path = require('path')
 const bodyParser = require('body-parser')
 const fs = require('fs')
 const Config = require('./config.json')
+const redis = require('redis')
+const RedisStore = require('connect-redis')(session)
 const client = redis.createClient()
 const favicon = require('serve-favicon')
 const superagent = require('superagent')
@@ -20,7 +22,7 @@ const Read = require('./internal/db/read')
 const Create = require('./internal/db/create')
 const Eris = require('eris')
 const Bezerk = require('./internal/clients/bezerk')
-const Raven = require('raven')
+const Raven = require()
 
 process.title = 'Logger Dashboard v2'
 
