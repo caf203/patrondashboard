@@ -84,9 +84,11 @@ module.exports = (req, res) => {
         Object.keys(doc.event_logs).forEach((key) => {
           if (doc.event_logs[key]) {
             let channel = channels.find(c => c.id === doc.event_logs[key])
-            selectedChannels[key] = {
-              id: channel.id,
-              name: channel.name
+            if (channel) {
+              selectedChannels[key] = {
+                id: channel.id,
+                name: channel.name
+              }
             }
           }
         })
