@@ -439,7 +439,7 @@ html(lang='en')
         $("#submitchannels").click(function () {
           $.ajax({
                 type:'POST',
-                url:'https://whatezlife.com/savechannels',
+                url:'https://pierodev.com/savechannels',
                 data: $("#dataform").serializeJSON(),
                 success:function(msg) {
                     message.innerHTML = msg.message
@@ -456,7 +456,7 @@ html(lang='en')
         $("#submitmodules").click(function () {
           $.ajax({
                 type:'POST',
-                url:'https://whatezlife.com/savemodules',
+                url:'https://pierodev.com/savemodules',
                 data: $("#modulesform").serializeJSON(),
                 success:function(msg) {
                     message.innerHTML = msg.message
