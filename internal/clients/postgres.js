@@ -4,7 +4,7 @@ const { Client, Pool } = require('pg') // PREREQUISITE: Have postgres installed 
 const pool = new Pool({
   user: Config.database.user,
   host: Config.database.host,
-  database: 'logger',
+  database: 'loggerpatreon',
   password: Config.database.password,
   port: 5432
 })

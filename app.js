@@ -24,7 +24,7 @@ const Eris = require('eris')
 const Bezerk = require('./internal/clients/bezerk')
 const Raven = require('raven')
 
-process.title = 'Logger Dashboard v2'
+process.title = 'Patron Logger Dashboard v1'
 
 passport.serializeUser(function (user, done) {
   done(null, user)
@@ -199,7 +199,7 @@ if (Config.core.useSSL) {
     cert: fs.readFileSync('ssl/cert.pem')
   }, app).listen(Config.core.port, function (err) {
     if (err) return console.log(err)
-    console.log('Logger Dashboard listening at https://whatezlife.com/', Config.core.port)
+    console.log('Logger Dashboard listening at https://pierodev.com/', Config.core.port)
   })
 } else {
   app.listen(Config.core.port, function (err) {
